@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>558</width>
+    <height>512</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="3">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QWidget" name="infoWidget" native="true">
+       <property name="maximumSize">
+        <size>
+         <width>216</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <layout class="QFormLayout" name="formLayout">
+        <item row="0" column="0">
+         <widget class="Line" name="line_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="0">
+         <widget class="Line" name="line_4">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="Launch_Emu">
+          <property name="text">
+           <string>启动仿真器</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="3" column="0">
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QPushButton" name="Launch_Rob">
+          <property name="text">
+           <string>启动机器人</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QCheckBox" name="Rob_Enable">
+          <property name="text">
+           <string>机器人使能</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="7" column="1">
+         <widget class="QPushButton" name="move_to_start">
+          <property name="text">
+           <string>移动至起始点</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="9" column="1">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>手动控制：</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="1">
+         <widget class="QPushButton" name="press_to_move">
+          <property name="text">
+           <string>按住执行</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <spacer name="verticalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="12" column="1">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>自动执行进度设置：</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="1">
+         <widget class="QSlider" name="Progress_Set">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="1">
+         <widget class="QLabel" name="target_progress">
+          <property name="text">
+           <string>目标进度：</string>
+          </property>
+         </widget>
+        </item>
+        <item row="15" column="1">
+         <widget class="QPushButton" name="move_begin">
+          <property name="text">
+           <string>开始执行</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="1">
+         <widget class="QPushButton" name="move_stop">
+          <property name="text">
+           <string>停止执行</string>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="1">
+         <spacer name="verticalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="18" column="1">
+         <widget class="QPushButton" name="Stop_and_Back">
+          <property name="text">
+           <string>急停-退刀</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,0,0">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="progress_text">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="progressBar">
+         <property name="value">
+          <number>24</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
