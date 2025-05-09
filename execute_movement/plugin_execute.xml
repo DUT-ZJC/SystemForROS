@@ -1,0 +1,18 @@
+<library path="src">
+    <class name="System" type="execute_movement.rqt_execute_movement.RqtExecute_Movement"
+           base_class_type="rqt_gui_py::Plugin">
+        <description>
+            GUI to perform a calibration with easy_handeye2.
+        </description>
+        <qtgui>
+            <group>
+                <label>Surgicalsystem</label>
+                <icon type="theme">folder</icon>
+                <statustip>Plugins for Surgical system.</statustip>
+            </group>
+            <label>Execute and Movement</label>
+            <icon type="theme">accessories-text-editor</icon>
+            <statustip>Plugins for Surgical system.</statustip>
+        </qtgui>
+    </class>
+</library>
