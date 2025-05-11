@@ -33,11 +33,11 @@ class RobotServer(rclpy.node.Node):
 
         # setup services and topics
 
-        self.move_to_start_service = self.create_service(emm.srv.Move_To_Strat, emc.TOSTART_TOPIC, self.move_to_start)
-        self.keep_move_service = self.create_service(emm.srv.Keep_Move, emc.KEEPMOVE_TOPIC, self.keep_move)
-        self.stop_move_service = self.create_service(emm.srv.Stop_Move, emc.STOPMOVE_TOPIC, self.stop_move)
-        self.Automove_start_service = self.create_service(emm.srv.AutoMove_Start, emc.AUTOMOVE_TOPIC, self.Automove_start)
-        self.stop_and_back_service = self.create_service(emm.srv.Stop_And_Back, emc.STOPBACK_TOPIC, self.stop_and_back)
+        self.move_to_start_service = self.create_service(emm.srv.MoveToStrat, emc.TOSTART_TOPIC, self.move_to_start)
+        self.keep_move_service = self.create_service(emm.srv.KeepMove, emc.KEEPMOVE_TOPIC, self.keep_move)
+        self.stop_move_service = self.create_service(emm.srv.StopMove, emc.STOPMOVE_TOPIC, self.stop_move)
+        self.Automove_start_service = self.create_service(emm.srv.AutoMoveStart, emc.AUTOMOVE_TOPIC, self.Automove_start)
+        self.stop_and_back_service = self.create_service(emm.srv.StopAndBack, emc.STOPBACK_TOPIC, self.stop_and_back)
 
     def move_to_start(self, _):
 

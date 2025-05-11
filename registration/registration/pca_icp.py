@@ -11,7 +11,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 import subprocess  # 导入 subprocess 模块
 from scipy.spatial.transform import Rotation as R
 
-model_path = Path.home() / 'easy_handeye2' / 'install' / 'registration' / 'share' / 'registration' / 'model' / 'outer_model.stl'
+model_path = Path.home() / 'lbr-stack' / 'install' / 'registration' / 'share' / 'registration' / 'model' / 'outer_model.stl'
 
 class PCA_ICP(QThread):
     def __init__(self):
@@ -185,8 +185,9 @@ class PCA_ICP(QThread):
         self.ren.ResetCamera()
         self.iren.Initialize()
     
-    def Publish_tf(self):
-        translation = self.transform_virtual_to_real[:3, 3]
+    def Publish_tf(self,camera_to_base):
+        
+        translation = np.dot(camera_to_base,self.transform_virtual_to_real)
 
         # 提取旋转矩阵
         rotation_matrix = self.transform_virtual_to_real[:3, :3]
@@ -196,8 +197,8 @@ class PCA_ICP(QThread):
         quaternion = rotation.as_quat()
 
         # 构造 static_transform_publisher 的命令
-        frame_id = "tr_base"  # 父坐标系
-        child_frame_id = "tr_virtual"  # 子坐标系
+        frame_id = "lbr_link_0"  # 父坐标系
+        child_frame_id = "virtual_frame"  # 子坐标系
         command = [
             "ros2", "run", "tf2_ros", "static_transform_publisher",
             "--x", "{:.6f}".format(translation[0]),
@@ -214,57 +215,4 @@ class PCA_ICP(QThread):
         subprocess.Popen(command)
 
 
-"""
-def compute_center_and_pca(points,a):
-    # 计算重心
-    center = np.mean(points, axis=0)
-    # 中心化点云
-    points_centered = points - center
-    # 进行PCA分析
-    pca = PCA(n_components=3)
-    pca.fit(points_centered)
-    # 提取特征向量
-    principal_axes = pca.components_
-    if a == 1:
-        principal_axes[1] = -principal_axes[1]
-        principal_axes[2] = -principal_axes[2]
-    print("主成分：\n", principal_axes)
-    principal_axes = principal_axes.T
-    print("重心：\n", center)
-    return center, principal_axes
 
-# 分别计算内侧部分和外侧部分的重心和特征向量
-center_inside, principal_axes_inside = compute_center_and_pca(points_inside,0)
-center_outside, principal_axes_outside = compute_center_and_pca(points_outside,1)
-
-# 定义一个函数来生成坐标系变换矩阵
-def create_transform_matrix(center, axes):
-    # 旋转矩阵
-    rotation_matrix = axes
-    # 平移矩阵
-    translation_matrix = center
-    print(center)
-
-    # 坐标系变换矩阵
-    transform_matrix = np.eye(4)
-    transform_matrix[:3, :3] = rotation_matrix
-    transform_matrix[:3, 3] = translation_matrix
-    print("坐标系变换矩阵：\n", transform_matrix)
-    return transform_matrix
-
-# 创建内侧部分和外侧部分的变换矩阵
-transform_inside = create_transform_matrix(center_inside, principal_axes_inside)
-transform_outside = create_transform_matrix(center_outside, principal_axes_outside)
-print("内侧部外侧矩阵：\n", transform_outside)
-
-# 计算内侧部分到外侧部分的坐标系变换矩阵
-transform_world_to_inside = transform_inside
-transform_outside_to_world = np.linalg.inv(transform_outside)
-transform_outside_to_inside = transform_world_to_inside @ transform_outside_to_world
-
-# 保存变换矩阵到文件
-with open('transform_outside_to_inside.pkl', 'wb') as f:
-    pickle.dump(transform_outside_to_inside, f)
-
-print("外侧部分到内侧部分的坐标系变换矩阵已保存到transform_outside_to_inside.pkl")
-"""

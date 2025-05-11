@@ -28,6 +28,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'move_test = execute_movement.move_test:main',
         ],
     },
 )

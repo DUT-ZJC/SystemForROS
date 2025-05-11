@@ -12,7 +12,8 @@ from pathlib import Path
 import math
 from tf2_geometry_msgs import from_matrix
 from std_msgs.msg import Int64
-save_path = Path.home() / ''
+
+save_path = Path.home() / '.ros2'/'surgery'/'path_data.npy'
 
 class RobotAct:
     def __init__(self, node: rclpy.node.Node,  max_velocity_scaling: float,

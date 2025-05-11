@@ -1,4 +1,6 @@
-import math
+import rclpy
+from rclpy.node import Node
+
 import pathlib
 import numpy as np
 import transforms3d as tfs
@@ -21,13 +23,22 @@ from std_msgs.msg import String
 from registration.point_cloud_get import PointCloudViewerNode
 import threading
 from . import pca_icp
-
+from tf2_ros import TransformException
+from tf2_ros.buffer import Buffer
+from tf2_ros.transform_listener import TransformListener
+from geometry_msgs.msg import TransformStamped
+from scipy.spatial.transform import Rotation as R
 class RqtRegistrationWidget(QWidget):
     def __init__(self, parent, context):
         super(RqtRegistrationWidget, self).__init__()
         self._parent = parent
         self._plugin_context = context
         self._node = context.node
+
+
+        self._node.tf_buffer = Buffer()
+        self._node.tf_listener = TransformListener(self._node.tf_buffer, self._node)
+
         self.registrateFlag = False
         self.points_node = PointCloudViewerNode()
         self.re = pca_icp.PCA_ICP()
@@ -141,7 +152,23 @@ class RqtRegistrationWidget(QWidget):
         self.node_thread2 = threading.Thread(target=self.re.show_two_model(self))
         self.node_thread2.daemon = True
         self.node_thread2.start()
-        self.re.Publish_tf()
+
+
+        transform = self.tf_buffer.lookup_transform(
+                'tr_base',           # 目标坐标系
+                'lbr_link_0',        # 源坐标系
+                rclpy.time.Time(),   # 时间戳（0表示最新）
+                timeout=rclpy.duration.Duration(seconds=1.0)  # 超时时间
+            )
+            
+        # 2. 将ROS Transform消息转换为4x4矩阵
+        trans = transform.transform.translation
+        rot = transform.transform.rotation
+        T_tr_base_to_lbr = np.eye(4)
+        T_tr_base_to_lbr[:3, 3] = [trans.x, trans.y, trans.z]
+        T_tr_base_to_lbr[:3, :3] = R.from_quat([rot.x, rot.y, rot.z, rot.w]).as_matrix()
+        
+        self.re.Publish_tf(T_tr_base_to_lbr)
         self.PrintLog('变换已发布')
 
     def PrintLog(self,Log):

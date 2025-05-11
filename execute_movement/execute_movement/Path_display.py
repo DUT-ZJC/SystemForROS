@@ -6,7 +6,7 @@ import numpy as np
 import sympy as sp
 from scipy.interpolate import splrep, splev
 
-model_path = Path.home() / 'easy_handeye2' / 'install' / 'path_plan' / 'share' / 'path_plan' / 'model' / 'vitual_model.stl'
+model_path = Path.home() / 'lbr-stack' / 'install' / 'path_plan' / 'share' / 'path_plan' / 'model' / 'vitual_model.stl'
 
 class Path_Display(QThread):
     def __init__(self,Qwidget):
@@ -24,6 +24,7 @@ class Path_Display(QThread):
         self.index1 = 0
         self.update_needed = False
         self.mutex = QMutex()
+        self.running = True
 
     def set_index(self, index):
         self.mutex.lock()  # 获取锁
@@ -60,14 +61,17 @@ class Path_Display(QThread):
         self.closest_point = self.Qwidget.center_point
         self.actpoint = self.Qwidget.actpoint
         self.rotation = self.Qwidget.rotation
+        self.radius = self.Qwidget.radius
+        if isinstance(self.rotation, list):
+            self.rotation = np.array(self.rotation)
         self.normal  = self.rotation[:,2]
         self.view()
 
     def display_normal(self):
         # 创建 vtkLineSource 对象
         line_source = vtk.vtkLineSource()
-        line_source.SetPoint1(self.closest_point[1])
-        line_source.SetPoint2([self.closest_point[1][i] + self.normal[i] * 10 for i in range(3)])  # 法线方向，长度为10
+        line_source.SetPoint1(self.closest_point)
+        line_source.SetPoint2([self.closest_point[i] + self.normal[i] * 10 for i in range(3)])  # 法线方向，长度为10
 
         # 创建 mapper 和 actor
         mapper = vtk.vtkPolyDataMapper()
@@ -93,7 +97,7 @@ class Path_Display(QThread):
 
         # 创建变换对象
         transform = vtk.vtkTransform()
-        cylinder_cener =  (self.closest_point[1][0]-4*self.normal[0],self.closest_point[1][1]-4*self.normal[1],self.closest_point[1][2]-4*self.normal[2])
+        cylinder_cener =  (self.closest_point[0]-4*self.normal[0],self.closest_point[1]-4*self.normal[1],self.closest_point[2]-4*self.normal[2])
         transform.Translate(cylinder_cener)  # 将圆柱移动到中心点
 
         # 计算旋转矩阵

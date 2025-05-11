@@ -1,4 +1,4 @@
-import math
+import yaml
 import pathlib
 import numpy as np
 import transforms3d as tfs
@@ -19,7 +19,9 @@ from pathlib import Path
 from execute_movement.Robot_move_client import RobotClient
 from execute_movement.Image_dispalay import Image_Display
 from execute_movement.Path_display import Path_Display
-save_path = Path.home() / ''
+import subprocess  # 导入 subprocess 模块
+
+save_path = Path.home() / '.ros2'/'surgery'/'path.yaml'
 
 class RqtExecute_MovementWidget(QWidget):
     def __init__(self, parent, context):
@@ -29,11 +31,10 @@ class RqtExecute_MovementWidget(QWidget):
         self._node = context.node
         self._node.target_index = 0
         self._node.current_index = 0
-        self.client = RobotClient(self._node)
         
         self.msg = String()
         self._node.publish_= self._node.create_publisher(String, 'SystemLog', 10)  # prevent unused variable warning'''
-        self.node.index_listener = self.node.create_subscription(Int64,"point_index",self.listener_callback,10)
+        self._node.index_listener = self._node.create_subscription(Int64,"point_index",self.listener_callback,10)
         
         from argparse import ArgumentParser
         parser = ArgumentParser()
@@ -46,7 +47,7 @@ class RqtExecute_MovementWidget(QWidget):
             print('arguments: ', args)
             print('unknowns: ', unknowns)
 
-        self.path_load(save_path)
+        self.path_load()
 
         self._widget = QWidget()
         self.vtkWidget = QVTKRenderWindowInteractor(self)
@@ -93,10 +94,10 @@ class RqtExecute_MovementWidget(QWidget):
         self._widget.Progress_Set.valueChanged.connect(self.Set_Progress)
 
         self._widget.ImageLabel.setText("等待图像加载...")  # 设置初始文本
-        self._widget.ImageLabel.setScaledContents(True)
+        self._widget.ImageLabel.setScaledContents(True)  # 确保图像自动缩放
+        self._widget.ImageLabel.resize(500, 600)  # 设置初始大小
         
-        self.Image_thread = Image_Display()
-        self.Image_thread.image_received.connect(self.update_image)  # 连接信号到槽
+        self.Image_thread = Image_Display(self._widget.ImageLabel)
         self.Image_thread.start()
 
 
@@ -128,60 +129,70 @@ class RqtExecute_MovementWidget(QWidget):
     def restore_settings(self, plugin_settings, instance_settings):
         pass
     
-    def update_image(self, q_image):
-        """更新 QLabel 的图像，运行在主线程中"""
-        pixmap = QPixmap.fromImage(q_image)
-        self._widget.ImageLabel.setPixmap(pixmap)
-
     
 
-    def path_load(self, load_path):
-        """
-        从指定路径加载路径信息
-        path_data = {
-            'center_point': center_point,
-            'actpoint': actpoint_array,
-            'rotation': self.path_cal.rotation,
-            'deep_position': deep_position,
-            'thickness': thickness
-        }
-        :param load_path: 加载路径的文件名（带.npy后缀）
-        """
+    def path_load(self):
 
-        # 加载 .npy 文件
-        path_data = np.load(load_path, allow_pickle=True).item()
+            # 设置默认加载路径
+            load_path = Path.home() / ".ros2" / "surgery" / "path.yaml"
+            
+            load_path = Path(load_path)
+            
+            # 检查文件是否存在
         
-        # 提取 actpoint 和 rotation 数据
-        self.actpoint = path_data['actpoint'].tolist()  # 转换回列表
-        self.rotation = path_data['rotation']
-        self.center_point = path_data['center_point'].tolist()
-        self.deep_position = path_data['deep_position'].tolist()
-        self.thickness = path_data['thickness'].tolist()
 
-        self.PrintLog("路径信息加载完成")
+            # 加载 YAML 文件
+            with open(load_path, 'r') as f:
+                path_data = yaml.safe_load(f)
+
+            # 转换数据格式
+            self.actpoint = path_data['actpoint']
+            self.rotation = [np.array(r) for r in path_data['rotation']]
+            self.center_point = np.array(path_data['center_point'][0])
+            self.deep_position = path_data['deep_position']
+            self.thickness = path_data['thickness']
+            if 'radius' in path_data:
+                self.radius = path_data['radius']
+            else:
+                self.radius = 5.0  # 默认值
+
+            self.PrintLog(f" 路径加载完成 ")
+            return True
+            
+    
 
 
     def Emu_launch(self):
-        pass
+        subprocess.Popen(["ros2", "launch", "lbr_bringup", "mock.launch.py",
+    "moveit:=true", "model:=iiwa14"])
+        subprocess.Popen(["ros2", "launch", "lbr_bringup", "rviz.launch.py"])
+        subprocess.Popen(["ros2", "launch", "lbr_bringup", "move_group.launch.py",
+    "mode:=mock", "model:=iiwa14"])
+        
+        subprocess.Popen(["ros2", "launch", "robot_act_move", "robot_server.launch.py",
+    "mode:=mock", "model:=iiwa14"])
+        self.client = RobotClient(self._node)
+        self.PrintLog(f" 仿真已启动 ")
+
     def Rob_Launch_Rob(self):
         pass
     def move_to_start(self):
-        self.client.move_to_start_point()
+        self.client.MoveToStart()
 
     def onButtonPressed(self):
-        self.client.keep_move()
+        self.client.KeepMove()
 
     def onButtonReleased(self):
-        self.client.stop_move()
+        self.client.StopMove()
 
     def move_begin(self):
-        self.client.Automove_start()
+        self.client.AutoMoveStart()
 
     def move_stop(self):
-        self.client.stop_move()
+        self.client.StopMove()
 
     def Stop_and_Back(self):
-        self.client.stop_and_back()
+        self.client.StopAndBack()
 
     def RobStateChanged(self,state):
         if state == Qt.Checked:
@@ -190,7 +201,7 @@ class RqtExecute_MovementWidget(QWidget):
             print("Checkbox is unchecked")
 
     def Set_Progress(self,value):
-        self._node.node.target_index = int(value/100*len(self.actpoint))
+        self._node.target_index = int(value/100*len(self.actpoint))
 
 
 
