@@ -32,7 +32,10 @@ def hidden_setup(context: LaunchContext) -> List[LaunchDescriptionEntity]:
                 moveit_configs.to_dict(),
                 {"use_sim_time": use_sim_time},
                 LBRDescriptionMixin.param_robot_name(),
-            ],
+            ],remappings=[
+                ("joint_states", "/lbr/joint_states")],
+                
+            
         )
     )
     return ld.entities

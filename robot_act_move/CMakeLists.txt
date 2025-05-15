@@ -26,10 +26,12 @@ find_package(std_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(moveit_core REQUIRED)
+find_package(nanoflann REQUIRED)
 # MoveIt 相关包
 find_package(moveit_ros_move_group REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED COMPONENTS trajectory_processing)
 
 # 编译可执行文件
 add_executable(robot_server
@@ -54,6 +56,7 @@ ament_target_dependencies(robot_server
   moveit_ros_move_group
   moveit_ros_planning
   moveit_ros_planning_interface
+  nanoflann
 )
 
 ament_target_dependencies(move_test
