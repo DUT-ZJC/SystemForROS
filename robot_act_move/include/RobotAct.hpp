@@ -24,6 +24,9 @@
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
+#include <moveit/robot_state/conversions.h>
+#include <queue>
+
 namespace execute_movement
 {
     struct PointCloud {
@@ -56,6 +59,7 @@ namespace execute_movement
         geometry_msgs::msg::Quaternion rotationMatrixToQuaternion(const std::vector<std::vector<double>>& rotation_matrix);
 
     private:
+        
         std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group_;
         moveit_msgs::msg::RobotTrajectory trajectory;
         trajectory_processing::TimeOptimalTrajectoryGeneration toptg;
@@ -71,8 +75,9 @@ namespace execute_movement
         geometry_msgs::msg::PoseStamped now_pose;
         geometry_msgs::msg::PoseStamped now_virtual;
         moveit::core::RobotStatePtr now_state;
-        void set_speed_and_move(double velocity = 0.005,double acceleration = 0.1);
+        void set_speed_and_move(double velocity = 0.005,double acceleration = 0.005);
         std::vector<geometry_msgs::msg::Pose> waypoints;
+        std::queue<geometry_msgs::msg::Pose> path_queue_;
         rclcpp::Publisher<std_msgs::msg::Int64>::SharedPtr Index_publisher_;
         rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_publisher_;
         rclcpp::Publisher<std_msgs::msg::String>::SharedPtr LogPublish;

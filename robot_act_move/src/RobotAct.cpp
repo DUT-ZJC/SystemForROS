@@ -33,8 +33,8 @@ namespace execute_movement
         move_group_->setPoseReferenceFrame("virtual_frame");
         // 设置末端执行器链接
         move_group_->setEndEffectorLink("lbr_link_ee");
-        move_group_->setGoalPositionTolerance(0.001);
-        move_group_->setGoalOrientationTolerance(0.001);
+        move_group_->setGoalPositionTolerance(0.0002);
+        move_group_->setGoalOrientationTolerance(0.0002);
         move_group_->setPlanningTime(10.0);
         move_group_->setMaxVelocityScalingFactor(0.1);  // 速度缩放因子，0.1 表示最大速度为默认最大速度的 10%
         move_group_->startStateMonitor(10);
@@ -44,7 +44,7 @@ namespace execute_movement
 
         timer_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
         begin_pose = move_group_->getCurrentPose();
-        rclcpp::Rate rate(10); // 设置循环频率为 10 Hz
+        rclcpp::Rate rate(200); // 设置循环频率为 10 Hz
         auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node_->get_clock(), tf2::Duration(1), node_);
         tf2_ros::TransformListener tf_listener(*tf_buffer);
         rt_ = std::make_shared<robot_trajectory::RobotTrajectory>(move_group_->getRobotModel(), move_group_->getName());
@@ -65,15 +65,33 @@ namespace execute_movement
             {
 
                 current_index_ = find_nearest_point({now_virtual.pose.position.x*1000, now_virtual.pose.position.y*1000, now_virtual.pose.position.z*1000});
-                if (current_index_!=target_index_&&current_index_!=last_index_)
-                {
+                //if (current_index_!=target_index_&&current_index_!=last_index_)
+                //{
                    pose_publisher_->publish(now_virtual);
                    publish_index(current_index_); 
                    last_index_ = current_index_;
+                //}
+                if (current_index_ > (target_index_-20)||current_index_ > (target_index_+20))
+                {
+                    stop_flag_ = true;
+                    auto msg = std_msgs::msg::String();   
+                    msg.data = "已进刀到目标位置";         
+                    LogPublish->publish(msg);
                 }
                 RCLCPP_INFO(node_->get_logger(), "Current Index: (%ld)",current_index_);
 
 
+            }
+            if(!path_queue_.empty()&&stop_flag_ == false)
+            {
+                waypoints.push_back(path_queue_.front());
+                path_queue_.pop();
+                double fraction = move_group_->computeCartesianPath(waypoints, 0.00005,0.0, trajectory,false);
+                if (fraction >= 0.99) // 使用新的 MoveItErrorCode
+                    {   
+                        move_group_->execute(trajectory);
+                    }
+                waypoints.clear();
             }
             rate.sleep();
         }
@@ -118,6 +136,8 @@ namespace execute_movement
 
     bool RobotAct::auto_move(int target_index)
     {
+        target_index_ = target_index;
+        stop_flag_ = false;
         if (current_index_ == 0)
         {
             target_index_ = target_index;
@@ -128,13 +148,14 @@ namespace execute_movement
                 target_pose.position.y = (start_point_[1] - i * normal_[1] )/1000;
                 target_pose.position.z = (start_point_[2] - i * normal_[2] )/1000;
                 target_pose.orientation = fixed_orientation_;
-                waypoints.push_back(target_pose);
+                path_queue_.push(target_pose);
             }
             move_to_target_point(0,target_index_);
             return true;
         }
         else
         {
+
             if (reset_flag_ == true)
             {
                 reset_flag_ = false;
@@ -149,11 +170,11 @@ namespace execute_movement
                     target_pose.orientation = fixed_orientation_;
                     waypoints.push_back(target_pose);
                 }
-                move_to_target_point(last_act_index_,target_index);
+                move_to_target_point(last_act_index_,target_index_);
                 return true;
 
             }else{
-                move_to_target_point(last_act_index_,target_index);
+                move_to_target_point(current_index_,target_index_);
                 return true;
             }
      
@@ -173,7 +194,7 @@ namespace execute_movement
             target_pose.orientation = fixed_orientation_;
             waypoints.push_back(target_pose);
         }
-        set_speed_and_move();
+        set_speed_and_move(0.1,0.1);
         return true;
     }
 
@@ -190,9 +211,9 @@ namespace execute_movement
                 target_pose.position.y = target_point[1]/1000;
                 target_pose.position.z = target_point[2]/1000;
                 target_pose.orientation = fixed_orientation_;
-                waypoints.push_back(target_pose);  // 目标位姿
+                path_queue_.push(target_pose);
+                
             }
-            set_speed_and_move();
         }
         else{
             for (int index =now_index; index > target_index;index--)
@@ -203,9 +224,8 @@ namespace execute_movement
                 target_pose.position.y = target_point[1]/1000;
                 target_pose.position.z = target_point[2]/1000;
                 target_pose.orientation = fixed_orientation_;
-                waypoints.push_back(target_pose);  // 目标位姿
+                path_queue_.push(target_pose);  // 目标位姿
             }
-            set_speed_and_move();
         }
     }
 
@@ -323,7 +343,7 @@ namespace execute_movement
 
     void RobotAct::set_speed_and_move(double velocity ,double acceleration )
     {
-        double fraction = move_group_->computeCartesianPath(waypoints, 0.001,0.0, trajectory);
+        double fraction = move_group_->computeCartesianPath(waypoints, 0.001,0.0, trajectory,false);
 
         rt_->setRobotTrajectoryMsg(*now_state, trajectory);
         toptg.computeTimeStamps(*rt_, velocity, acceleration);

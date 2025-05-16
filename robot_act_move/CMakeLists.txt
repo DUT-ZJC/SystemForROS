@@ -30,6 +30,9 @@ find_package(nanoflann REQUIRED)
 # MoveIt 相关包
 find_package(moveit_ros_move_group REQUIRED)
 find_package(moveit_ros_planning REQUIRED)
+find_package(rclcpp_action REQUIRED)                # ← 新增
+find_package(control_msgs REQUIRED)   
+
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED COMPONENTS trajectory_processing)
 
@@ -57,6 +60,8 @@ ament_target_dependencies(robot_server
   moveit_ros_planning
   moveit_ros_planning_interface
   nanoflann
+  rclcpp_action
+  control_msgs
 )
 
 ament_target_dependencies(move_test
